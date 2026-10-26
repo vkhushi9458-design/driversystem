@@ -1,0 +1,542 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DriveGuard AI | Driver Monitoring</title>
+  <style>
+    :root {
+      --bg: #080d17;
+      --panel: #101827;
+      --panel2: #141f30;
+      --border: #253247;
+      --text: #edf4ff;
+      --muted: #8d9bb0;
+      --teal: #36e0cf;
+      --green: #40d99b;
+      --red: #ff6577;
+      --amber: #ffbf69;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+    }
+
+    button, input, select { font: inherit; }
+
+    button { cursor: pointer; }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 235px minmax(0, 1fr);
+    }
+
+    .sidebar {
+      background: #0c1320;
+      border-right: 1px solid var(--border);
+      padding: 25px 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 0 8px 30px;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      color: #07141a;
+      background: var(--teal);
+      font-size: 23px;
+      font-weight: 800;
+    }
+
+    .brand h1 { margin: 0; font-size: 17px; }
+    .brand p { margin: 5px 0 0; font-size: 11px; color: var(--muted); }
+
+    .nav-label {
+      color: #68788f;
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      margin: 22px 10px 10px;
+    }
+
+    .nav-item {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      width: 100%;
+      padding: 12px;
+      margin: 4px 0;
+      border: 1px solid transparent;
+      border-radius: 9px;
+      color: #9eacc0;
+      background: transparent;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    .nav-item.active {
+      color: var(--teal);
+      background: #12302f;
+      border-color: #20504e;
+    }
+
+    .nav-item:hover { background: #182438; }
+
+    .sidebar-bottom {
+      margin-top: 40px;
+      padding: 15px 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .online-dot {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      margin-right: 7px;
+      background: var(--green);
+      border-radius: 50%;
+    }
+
+    .main { min-width: 0; }
+
+    .topbar {
+      min-height: 78px;
+      padding: 18px 30px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .topbar h2 { margin: 0; font-size: 19px; }
+    .topbar p { margin: 6px 0 0; color: var(--muted); font-size: 12px; }
+
+    .top-actions { display: flex; align-items: center; gap: 10px; }
+
+    .pill {
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .avatar {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: var(--teal);
+      background: #173b43;
+      font-weight: 700;
+    }
+
+    .content { padding: 27px 30px; max-width: 1600px; margin: auto; }
+
+    .welcome {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .welcome h2 { margin: 0; font-size: 23px; }
+    .welcome p { margin: 8px 0 0; color: var(--muted); font-size: 13px; }
+
+    .button {
+      padding: 10px 15px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--panel2);
+      color: var(--text);
+    }
+
+    .button.primary {
+      background: var(--teal);
+      border-color: var(--teal);
+      color: #061519;
+      font-weight: 700;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 15px;
+      margin-bottom: 18px;
+    }
+
+    .card {
+      min-width: 0;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      padding: 19px;
+    }
+
+    .stat-top { display: flex; justify-content: space-between; gap: 8px; }
+    .stat-label { color: var(--muted); font-size: 12px; }
+    .stat-icon { color: var(--teal); font-size: 19px; }
+    .stat-value { margin-top: 17px; font-size: 29px; font-weight: 700; }
+    .stat-note { margin-top: 8px; color: var(--muted); font-size: 11px; }
+
+    .positive { color: var(--green); }
+    .danger { color: var(--red); }
+    .warning { color: var(--amber); }
+
+    .columns {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(280px, 1fr);
+      gap: 17px;
+      margin-bottom: 17px;
+    }
+
+    .card-heading {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .card-heading h3 { margin: 0; font-size: 15px; }
+    .card-heading p { margin: 6px 0 0; color: var(--muted); font-size: 11px; }
+
+    .tag {
+      padding: 6px 9px;
+      border-radius: 6px;
+      font-size: 10px;
+      white-space: nowrap;
+      background: #182438;
+      color: var(--muted);
+    }
+
+    .tag.live { background: #15382e; color: var(--green); }
+
+    .camera-placeholder {
+      min-height: 275px;
+      border: 1px dashed #34445b;
+      border-radius: 10px;
+      background:
+        radial-gradient(ellipse at center, #182a3a 0%, #0b121e 72%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .camera-symbol { font-size: 38px; margin-bottom: 12px; }
+    .camera-placeholder h4 { margin: 0 0 8px; font-size: 14px; }
+    .camera-placeholder p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.7; }
+
+    .camera-actions { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 14px; }
+
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+    }
+
+    .status-row:last-child { border-bottom: 0; }
+    .status-row span { color: var(--muted); }
+
+    .status-badge {
+      padding: 5px 8px;
+      border-radius: 6px;
+      background: #15382e;
+      color: var(--green);
+      font-size: 10px;
+    }
+
+    .status-badge.waiting { background: #382c1a; color: var(--amber); }
+
+    .chart {
+      height: 175px;
+      display: flex;
+      align-items: end;
+      justify-content: space-around;
+      gap: 12px;
+      padding: 20px 4px 0;
+      border-bottom: 1px solid var(--border);
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent 0,
+        transparent 42px,
+        #263247 43px,
+        transparent 44px
+      );
+    }
+
+    .bar-group {
+      flex: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: end;
+      gap: 9px;
+    }
+
+    .bar {
+      width: min(34px, 80%);
+      min-height: 4px;
+      background: linear-gradient(180deg, #36e0cf, #168b98);
+      border-radius: 5px 5px 0 0;
+    }
+
+    .bar-label { color: var(--muted); font-size: 10px; padding-bottom: 8px; }
+
+    .legend { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 17px; color: var(--muted); font-size: 11px; }
+    .legend span::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 2px; background: var(--teal); margin-right: 6px; }
+    .legend span:nth-child(2)::before { background: var(--red); }
+    .legend span:nth-child(3)::before { background: var(--amber); }
+
+    .event-list { display: grid; gap: 0; }
+
+    .event {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .event:last-child { border-bottom: 0; }
+    .event-icon { width: 35px; height: 35px; display: grid; place-items: center; background: #30202b; border-radius: 9px; color: var(--red); }
+    .event:nth-child(2) .event-icon { background: #382d1d; color: var(--amber); }
+    .event:nth-child(3) .event-icon { background: #18352f; color: var(--green); }
+    .event-info { min-width: 0; flex: 1; }
+    .event-info strong { display: block; font-size: 12px; }
+    .event-info small { display: block; margin-top: 5px; color: var(--muted); font-size: 10px; }
+    .event-time { color: var(--muted); font-size: 10px; white-space: nowrap; }
+
+    .bottom-note {
+      padding: 16px;
+      border: 1px solid #25494c;
+      border-radius: 11px;
+      background: #102327;
+      color: #a9d9d5;
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .footer { text-align: center; color: #65758d; font-size: 11px; padding: 23px 10px; }
+
+    @media (max-width: 1100px) {
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .columns { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 700px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { padding: 13px; border-right: 0; border-bottom: 1px solid var(--border); }
+      .brand { padding: 0 5px 12px; }
+      .nav-label, .sidebar-bottom { display: none; }
+      .nav-list { display: flex; gap: 5px; overflow-x: auto; }
+      .nav-item { width: auto; flex: 0 0 auto; padding: 10px; margin: 0; }
+      .topbar { padding: 15px; }
+      .topbar h2 { font-size: 16px; }
+      .topbar p { font-size: 11px; }
+      .pill { display: none; }
+      .content { padding: 19px 13px; }
+      .welcome { align-items: flex-start; flex-direction: column; }
+      .welcome h2 { font-size: 20px; }
+      .stats { gap: 10px; }
+      .card { padding: 14px; }
+      .stat-value { font-size: 24px; }
+      .camera-placeholder { min-height: 210px; }
+    }
+
+    @media (max-width: 380px) {
+      .stats { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">D</div>
+        <div>
+          <h1>DriveGuard AI</h1>
+          <p>DRIVER SAFETY PLATFORM</p>
+        </div>
+      </div>
+
+      <div class="nav-label">WORKSPACE</div>
+      <nav class="nav-list">
+        <button class="nav-item active" type="button">◈ Overview</button>
+        <button class="nav-item" type="button">▣ Live monitoring</button>
+        <button class="nav-item" type="button">◷ Warning history</button>
+        <button class="nav-item" type="button">▥ Analytics</button>
+      </nav>
+
+      <div class="nav-label">PREFERENCES</div>
+      <nav class="nav-list">
+        <button class="nav-item" type="button">⚙ Settings</button>
+        <button class="nav-item" type="button">◎ My account</button>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <span class="online-dot"></span>AI engine ready<br>
+        <span style="color:#68788f">Local monitoring prototype</span>
+      </div>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <div>
+          <h2>Monitoring Overview</h2>
+          <p>Driver safety intelligence dashboard</p>
+        </div>
+        <div class="top-actions">
+          <div class="pill">SYSTEM STATUS · LOCAL DEMO</div>
+          <div class="avatar">U</div>
+        </div>
+      </header>
+
+      <main class="content">
+        <section class="welcome">
+          <div>
+            <h2>Good to see you 👋</h2>
+            <p>Here is your driver monitoring summary.</p>
+          </div>
+          <button class="button primary" type="button">＋ New session</button>
+        </section>
+
+        <section class="stats">
+          <article class="card">
+            <div class="stat-top"><span class="stat-label">Monitoring status</span><span class="stat-icon">◉</span></div>
+            <div class="stat-value positive">Ready</div>
+            <div class="stat-note">Waiting for camera connection</div>
+          </article>
+          <article class="card">
+            <div class="stat-top"><span class="stat-label">Eyes closed events</span><span class="stat-icon">◉</span></div>
+            <div class="stat-value">--</div>
+            <div class="stat-note">Saved detection events</div>
+          </article>
+          <article class="card">
+            <div class="stat-top"><span class="stat-label">Yawning events</span><span class="stat-icon">◌</span></div>
+            <div class="stat-value">--</div>
+            <div class="stat-note">Saved detection events</div>
+          </article>
+          <article class="card">
+            <div class="stat-top"><span class="stat-label">Head-down events</span><span class="stat-icon">⌄</span></div>
+            <div class="stat-value">--</div>
+            <div class="stat-note">Saved detection events</div>
+          </article>
+        </section>
+
+        <section class="columns">
+          <article class="card">
+            <div class="card-heading">
+              <div><h3>Live driver monitoring</h3><p>Camera feed and AI analysis</p></div>
+              <span class="tag live">● READY</span>
+            </div>
+            <div class="camera-placeholder">
+              <div>
+                <div class="camera-symbol">▣</div>
+                <h4>Camera preview will appear here</h4>
+                <p>Your live feed will connect to the existing<br>Python and MediaPipe detection engine.</p>
+              </div>
+            </div>
+            <div class="camera-actions">
+              <button class="button primary" type="button">Start monitoring</button>
+              <button class="button" type="button">Stop monitoring</button>
+            </div>
+          </article>
+
+          <article class="card">
+            <div class="card-heading">
+              <div><h3>Driver condition</h3><p>Live detection measurements</p></div>
+              <span class="tag">AI METRICS</span>
+            </div>
+            <div class="status-row"><span>Current status</span><strong class="positive">Waiting</strong></div>
+            <div class="status-row"><span>Face detected</span><strong>--</strong></div>
+            <div class="status-row"><span>Eye aspect ratio</span><strong>--</strong></div>
+            <div class="status-row"><span>Mouth opening ratio</span><strong>--</strong></div>
+            <div class="status-row"><span>Head pitch</span><strong>--</strong></div>
+            <div class="status-row"><span>Active warnings</span><strong>0</strong></div>
+          </article>
+        </section>
+
+        <section class="columns">
+          <article class="card">
+            <div class="card-heading">
+              <div><h3>Warning analytics</h3><p>Illustrative weekly overview — not live data yet</p></div>
+              <span class="tag">LAST 7 DAYS</span>
+            </div>
+            <div class="chart" aria-label="Illustrative warning chart">
+              <div class="bar-group"><div class="bar" style="height:30%"></div><span class="bar-label">Mon</span></div>
+              <div class="bar-group"><div class="bar" style="height:52%"></div><span class="bar-label">Tue</span></div>
+              <div class="bar-group"><div class="bar" style="height:38%"></div><span class="bar-label">Wed</span></div>
+              <div class="bar-group"><div class="bar" style="height:72%"></div><span class="bar-label">Thu</span></div>
+              <div class="bar-group"><div class="bar" style="height:45%"></div><span class="bar-label">Fri</span></div>
+              <div class="bar-group"><div class="bar" style="height:25%"></div><span class="bar-label">Sat</span></div>
+              <div class="bar-group"><div class="bar" style="height:60%"></div><span class="bar-label">Sun</span></div>
+            </div>
+            <div class="legend"><span>Eyes closed</span><span>Yawning</span><span>Head down</span></div>
+          </article>
+
+          <article class="card">
+            <div class="card-heading">
+              <div><h3>Recent warnings</h3><p>Recent event activity</p></div>
+              <span class="tag">HISTORY</span>
+            </div>
+            <div class="event-list">
+              <div class="event">
+                <div class="event-icon">◉</div>
+                <div class="event-info"><strong>Eyes closed</strong><small>Example event · Connect database next</small></div>
+                <span class="event-time">Demo</span>
+              </div>
+              <div class="event">
+                <div class="event-icon">◌</div>
+                <div class="event-info"><strong>Yawning detected</strong><small>Example event · Connect database next</small></div>
+                <span class="event-time">Demo</span>
+              </div>
+              <div class="event">
+                <div class="event-icon">⌄</div>
+                <div class="event-info"><strong>Head down</strong><small>Example event · Connect database next</small></div>
+                <span class="event-time">Demo</span>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <div class="bottom-note">
+          <strong>Privacy note:</strong> This is the dashboard layout preview.
+          We will connect real measurements and event history in the next steps.
+          Before public deployment, we will also add secure authentication,
+          user-specific records and HTTPS camera access.
+        </div>
+
+        <footer class="footer">DriveGuard AI · Driver Safety Monitoring · Project Dashboard</footer>
+      </main>
+    </div>
+  </div>
+</body>
+</html>
